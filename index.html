@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBIT Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#100d18;
+ color:#fff;
+}
+header{
+ padding:25px;
+ background:linear-gradient(120deg,#38134c,#a52b83);
+ border-radius:0 0 25px 25px;
+}
+header h1{margin:0;font-size:28px}
+header p{color:#f4c9ed}
+.container{padding:22px;max-width:1100px;margin:auto}
+.cards{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+ gap:15px;
+}
+.card{
+ background:#211a2d;
+ padding:20px;
+ border:1px solid #493054;
+ border-radius:18px;
+}
+.card h3{color:#e8a5e1;font-size:14px}
+.card strong{font-size:28px}
+section{margin-top:25px}
+h2{color:#f3a6e7}
+input,button,textarea{
+ padding:12px;
+ border-radius:10px;
+ border:none;
+ margin:5px 3px;
+}
+input,textarea{background:#30253d;color:white}
+button{
+ background:#d94fbd;
+ color:white;
+ cursor:pointer;
+ font-weight:bold;
+}
+button:hover{background:#a92e91}
+.item{
+ background:#211a2d;
+ padding:13px;
+ margin:9px 0;
+ border-radius:12px;
+ display:flex;
+ justify-content:space-between;
+ gap:10px;
+}
+.done{text-decoration:line-through;opacity:.5}
+textarea{width:100%;min-height:120px}
+small{color:#c5afce}
+</style>
+</head>
+<body>
+
+<header>
+ <h1>Halo! ✨</h1>
+ <p>Selamat datang di ruang aktivitasmu.</p>
+</header>
+
+<div class="container">
+
+ <div class="cards">
+  <div class="card">
+   <h3>JUMLAH TUGAS</h3>
+   <strong id="total">0</strong>
+  </div>
+  <div class="card">
+   <h3>TUGAS SELESAI</h3>
+   <strong id="selesai">0</strong>
+  </div>
+  <div class="card">
+   <h3>PROGRES</h3>
+   <strong id="progres">0%</strong>
+  </div>
+ </div>
+
+ <section>
+  <h2>📌 Daftar Kegiatan</h2>
+  <input id="tugas" placeholder="Tulis kegiatan baru...">
+  <button onclick="tambahTugas()">Tambah +</button>
+  <div id="daftar"></div>
+ </section>
+
+ <section>
+  <h2>🎯 Target Bulanan</h2>
+  <input id="target" placeholder="Tulis targetmu...">
+  <button onclick="tambahTarget()">Tambah target</button>
+  <div id="targets"></div>
+ </section>
+
+ <section>
+  <h2>📝 Catatan Pribadi</h2>
+  <textarea id="catatan" placeholder="Tuliskan ide atau catatanmu..."></textarea>
+  <small>Catatan tersimpan otomatis di perangkat ini.</small>
+ </section>
+
+</div>
+
+<script>
+let tugas=JSON.parse(localStorage.getItem("orbit_tugas")||"[]");
+let targets=JSON.parse(localStorage.getItem("orbit_target")||"[]");
+
+function simpan(){
+ localStorage.setItem("orbit_tugas",JSON.stringify(tugas));
+ localStorage.setItem("orbit_target",JSON.stringify(targets));
+}
+
+function tampilkan(){
+ let daftar=document.getElementById("daftar");
+ daftar.innerHTML="";
+ tugas.forEach((t,i)=>{
+  daftar.innerHTML+=`
+  <div class="item">
+   <span class="${t.done?'done':''}">${t.nama}</span>
+   <span>
+    <button onclick="selesai(${i})">✓</button>
+    <button onclick="hapus(${i})">×</button>
+   </span>
+  </div>`;
+ });
+ let jumlah=tugas.length;
+ let beres=tugas.filter(t=>t.done).length;
+ document.getElementById("total").textContent=jumlah;
+ document.getElementById("selesai").textContent=beres;
+ document.getElementById("progres").textContent=
+ jumlah?Math.round(beres/jumlah*100)+"%":"0%";
+}
+
+function tambahTugas(){
+ let el=document.getElementById("tugas");
+ if(!el.value.trim())return;
+ tugas.push({nama:el.value.trim(),done:false});
+ el.value="";
+ simpan();tampilkan();
+}
+function selesai(i){
+ tugas[i].done=!tugas[i].done;
+ simpan();tampilkan();
+}
+function hapus(i){
+ tugas.splice(i,1);
+ simpan();tampilkan();
+}
+
+function tambahTarget(){
+ let el=document.getElementById("target");
+ if(!el.value.trim())return;
+ targets.push({nama:el.value.trim(),done:false});
+ el.value="";
+ simpan();tampilkanTarget();
+}
+function tampilkanTarget(){
+ let box=document.getElementById("targets");
+ box.innerHTML="";
+ targets.forEach((t,i)=>{
+  box.innerHTML+=`
+  <div class="item">
+   <span class="${t.done?'done':''}">${t.nama}</span>
+   <span>
+    <button onclick="cekTarget(${i})">✓</button>
+    <button onclick="hapusTarget(${i})">×</button>
+   </span>
+  </div>`;
+ });
+}
+function cekTarget(i){
+ targets[i].done=!targets[i].done;
+ simpan();tampilkanTarget();
+}
+function hapusTarget(i){
+ targets.splice(i,1);
+ simpan();tampilkanTarget();
+}
+
+let catatan=document.getElementById("catatan");
+catatan.value=localStorage.getItem("orbit_catatan")||"";
+catatan.addEventListener("input",()=>{
+ localStorage.setItem("orbit_catatan",catatan.value);
+});
+
+tampilkan();
+tampilkanTarget();
+</script>
+
+</body>
+</html>
